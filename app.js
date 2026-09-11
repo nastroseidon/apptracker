@@ -7,17 +7,54 @@ const DAY = 86400000;
 
 /* ---------- state ---------- */
 
-let state = load();
+// Assigned in init(), not here: load() reads consts declared further down, and
+// at module scope those are still in the temporal dead zone.
+let state = { apps: [] };
+
+/* A first open with an empty list shows nothing about what the tool does, so it
+   starts on a sample phone. Any import or manual add clears it. */
+const SAMPLE = [
+  ['Instagram', 1270, -404, false],
+  ['TikTok', 2150, -1, false],
+  ['Peloton', 780, null, true],
+  ['United Airlines', 190, -924, false],
+  ['GarageBand', 1640, -45, false],
+  ['Duolingo', 310, -615, false],
+  ['Spotify', 640, -2, false],
+  ['Kindle', 220, -190, false],
+];
+
+function sampleApps() {
+  const today = Date.now();
+  return SAMPLE.map(([name, sizeMB, offset, neverUsed]) => ({
+    id: uid(),
+    name,
+    sizeMB,
+    lastUsed: neverUsed ? null : isoOf(new Date(today + offset * DAY)),
+    neverUsed,
+    pinned: false,
+    notes: '',
+    decision: null,
+  }));
+}
 
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { apps: [] };
+    if (!raw) return { apps: sampleApps(), demo: true };
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed?.apps) ? parsed : { apps: [] };
   } catch {
     return { apps: [] };
   }
+}
+
+/* The sample is a demonstration, not the user's phone — the first real app
+   they add or import replaces it wholesale rather than mixing in. */
+function dropSample() {
+  if (!state.demo) return;
+  state = { apps: [] };
+  delete state.demo;
 }
 
 function save() {
@@ -28,8 +65,10 @@ function save() {
   }
 }
 
-const uid = () => Math.random().toString(36).slice(2, 10);
-const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Function declarations, not consts: load() runs at module scope above these,
+// and a temporal-dead-zone error there would be swallowed by its own try/catch.
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function norm(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, ''); }
 
 /* ---------- scoring ---------- */
 
@@ -250,6 +289,7 @@ function parseStorageText(text, now = new Date()) {
 
 /* Merge parsed rows into state, updating rather than duplicating. */
 function mergeParsed(rows) {
+  dropSample();
   let added = 0;
   let updated = 0;
   for (const row of rows) {
@@ -301,6 +341,7 @@ function show(name) {
 }
 
 function render() {
+  $('#demo-banner').hidden = !state.demo;
   const active = state.apps.filter((a) => a.decision !== 'deleted');
   const reclaimable = active
     .filter((a) => !a.pinned && evaluate(a).bucket === 'cull')
@@ -488,6 +529,7 @@ function closeEditor(action) {
 
   const name = f.name.value.trim();
   if (!name) return;
+  if (!editing) dropSample();
   const sizeMB = toMB(f.size.value || 0, f.unit.value) || 0;
   const target = editing || { id: uid(), decision: null };
   Object.assign(target, {
@@ -514,7 +556,26 @@ function toast(msg) {
   toastTimer = setTimeout(() => { t.hidden = true; }, 2400);
 }
 
-function download(filename, text) {
+/* Hosted in the claude.ai artifact viewer, a plain <a download> does nothing —
+   saving there goes through the downloads capability. Self-hosted, that
+   capability is absent and the anchor is the only thing that works, so try the
+   capability first and fall back. */
+async function download(filename, text) {
+  try {
+    const downloads = await window.claude?.use?.('downloads');
+    if (downloads) {
+      await downloads.save({ filename, data: text });
+      toast('Backup saved');
+      return;
+    }
+  } catch (err) {
+    toast(err?.code === 'declined' ? 'Export cancelled' : 'Could not save the backup.');
+    return;
+  }
+  saveViaAnchor(filename, text);
+}
+
+function saveViaAnchor(filename, text) {
   const blob = new Blob([text], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -529,6 +590,8 @@ function download(filename, text) {
 /* ---------- wiring ---------- */
 
 function init() {
+  state = load();
+
   for (const t of document.querySelectorAll('.tab')) {
     t.addEventListener('click', () => show(t.dataset.view));
   }
@@ -599,9 +662,18 @@ function init() {
     render();
   });
 
+  $('#drop-sample').addEventListener('click', () => {
+    state = { apps: [] };
+    save();
+    toast('Sample cleared — import your own list');
+    show('import');
+  });
+
   show('verdict');
 
-  if ('serviceWorker' in navigator) {
+  // The single-file bundle ships no sw.js or manifest, so only the multi-file
+  // build — the one that has a manifest link — tries to register.
+  if ('serviceWorker' in navigator && document.querySelector('link[rel="manifest"]')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
 }
@@ -614,5 +686,5 @@ if (typeof document !== 'undefined') init();
 
 /* exported for the test runner */
 if (typeof module !== 'undefined') {
-  module.exports = { parseStorageText, parseDate, evaluate, toMB, fmtSize, staleFactor, sizeFactor };
+  module.exports = { parseStorageText, parseDate, evaluate, toMB, fmtSize, staleFactor, sizeFactor, sampleApps };
 }

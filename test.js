@@ -148,3 +148,15 @@ test('never-used still scores at the ceiling', () => {
   assert.strictEqual(ev.bucket, 'cull');
   assert.ok(ev.score > evaluate({ name: 'X', sizeMB: 780, lastUsed: daysAgo(400) }, NOW.getTime()).score);
 });
+
+test('the sample phone is well-formed and exercises every bucket', () => {
+  const { sampleApps } = require('./app.js');
+  const apps = sampleApps();
+  assert.ok(apps.length >= 6);
+  for (const a of apps) {
+    assert.ok(a.id && a.name, 'every sample app needs an id and a name');
+    assert.ok(a.neverUsed || /^\d{4}-\d{2}-\d{2}$/.test(a.lastUsed), `bad date on ${a.name}`);
+  }
+  const buckets = new Set(apps.map((a) => evaluate(a).bucket));
+  assert.deepStrictEqual([...buckets].sort(), ['cull', 'keep', 'offload']);
+});
