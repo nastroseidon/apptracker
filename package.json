@@ -1,0 +1,11 @@
+{
+  "name": "appcull",
+  "version": "1.0.0",
+  "description": "Decide which iPhone apps are worth keeping.",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "start": "npx --yes serve ."
+  },
+  "license": "MIT"
+}

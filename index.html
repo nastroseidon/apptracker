@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AppCull</title>
+<meta name="description" content="Decide which iPhone apps are worth keeping.">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AppCull">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>AppCull</h1>
+  <div class="stats" id="headline"></div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" data-view="verdict" role="tab">Verdict</button>
+  <button class="tab" data-view="triage" role="tab">Triage</button>
+  <button class="tab" data-view="library" role="tab">Library</button>
+  <button class="tab" data-view="import" role="tab">Import</button>
+</nav>
+
+<div id="demo-banner" class="banner" hidden>
+  <span>Showing a <strong>sample phone</strong> so you can see how it reads.</span>
+  <button class="btn small" id="drop-sample">Use my apps</button>
+</div>
+
+<main>
+  <!-- VERDICT -->
+  <section id="view-verdict" class="view">
+    <div id="verdict-empty" class="empty" hidden>
+      <h2>Nothing to judge yet</h2>
+      <p>Import your app list from <strong>Settings → General → iPhone Storage</strong>, or add apps by hand.</p>
+      <button class="btn primary" data-goto="import">Import my apps</button>
+    </div>
+    <div id="verdict-body" hidden>
+      <div class="summary" id="summary"></div>
+      <div id="buckets"></div>
+    </div>
+  </section>
+
+  <!-- TRIAGE -->
+  <section id="view-triage" class="view" hidden>
+    <div id="triage-empty" class="empty" hidden>
+      <h2>Triage queue is clear</h2>
+      <p>Every app has a decision. Change your mind any time in Library.</p>
+    </div>
+    <div id="triage-card" hidden></div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="view-library" class="view" hidden>
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Search apps" autocomplete="off">
+      <select id="sort">
+        <option value="score">Sort: Cull score</option>
+        <option value="stale">Sort: Longest unused</option>
+        <option value="size">Sort: Largest</option>
+        <option value="name">Sort: Name</option>
+      </select>
+    </div>
+    <button class="btn" id="add-app">+ Add an app</button>
+    <div id="app-list"></div>
+  </section>
+
+  <!-- IMPORT -->
+  <section id="view-import" class="view" hidden>
+    <h2>Import from iPhone Storage</h2>
+    <ol class="howto">
+      <li>On your iPhone open <strong>Settings → General → iPhone Storage</strong>.</li>
+      <li>Wait for the app list to finish loading, then screenshot it. Scroll and screenshot again until you have the whole list.</li>
+      <li>Open a screenshot in Photos, tap the <strong>Live Text</strong> button (bottom-right), <strong>Select All</strong>, then <strong>Copy</strong>.</li>
+      <li>Paste below. Repeat for each screenshot — importing again updates apps you already have instead of duplicating them.</li>
+    </ol>
+    <textarea id="paste" rows="10" placeholder="Paste here…
+Instagram
+1.24 GB
+Last Used: 8/3/25"></textarea>
+    <div class="row">
+      <button class="btn primary" id="do-parse">Parse</button>
+      <button class="btn" id="clear-paste">Clear</button>
+    </div>
+    <div id="parse-result"></div>
+    <hr>
+    <h2>Backup</h2>
+    <p class="muted">Everything lives in this browser only. Nothing is uploaded anywhere.</p>
+    <div class="row">
+      <button class="btn" id="export">Export JSON</button>
+      <button class="btn" id="import-json">Import JSON</button>
+      <button class="btn danger" id="wipe">Erase all data</button>
+    </div>
+    <input type="file" id="file-input" accept="application/json" hidden>
+  </section>
+</main>
+
+<dialog id="editor">
+  <form method="dialog" id="editor-form">
+    <h2 id="editor-title">Edit app</h2>
+    <label>Name<input name="name" required autocomplete="off"></label>
+    <label>Size
+      <div class="row tight">
+        <input name="size" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0">
+        <select name="unit"><option>MB</option><option>GB</option><option>KB</option></select>
+      </div>
+    </label>
+    <label>Last used<input name="lastUsed" type="date"></label>
+    <label class="check"><input name="neverUsed" type="checkbox"> Never used</label>
+    <label class="check"><input name="pinned" type="checkbox"> Pin — never suggest deleting this</label>
+    <label>Notes<input name="notes" autocomplete="off" placeholder="Why you keep it"></label>
+    <div class="row">
+      <button class="btn primary" value="save">Save</button>
+      <button class="btn" value="cancel" formnovalidate>Cancel</button>
+      <button class="btn danger" value="delete" id="editor-delete" formnovalidate>Remove</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
