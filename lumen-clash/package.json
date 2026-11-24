@@ -1,0 +1,23 @@
+{
+  "name": "lumen-clash",
+  "version": "0.1.0",
+  "description": "Strategy board + real-time arena duels, for iOS and Android.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes serve web",
+    "test": "node --test test/rules.test.mjs",
+    "smoke": "node test/smoke.mjs",
+    "ios": "npx cap sync ios && npx cap open ios",
+    "android": "npx cap sync android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2"
+  }
+}
