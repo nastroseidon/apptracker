@@ -1,0 +1,8 @@
+{
+  "appId": "com.example.lumenclash",
+  "appName": "Lumen Clash",
+  "webDir": "web",
+  "backgroundColor": "#0d0c18",
+  "ios": { "contentInset": "never" },
+  "android": { "backgroundColor": "#0d0c18" }
+}

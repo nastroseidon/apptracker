@@ -1,0 +1,30 @@
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+html, body { margin: 0; height: 100%; background: #0d0c18; overflow: hidden; overscroll-behavior: none; }
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #e8e6f5;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+#game { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+#menu { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: calc(24px + var(--sat)) 16px calc(24px + var(--sab)); background: rgba(8, 7, 18, 0.72);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-sizing: border-box; overflow-y: auto; }
+#menu[hidden] { display: none; }
+#menu > * { width: 100%; max-width: 340px; box-sizing: border-box; }
+h1 { font-size: 46px; margin: 0 0 4px; text-align: center; letter-spacing: 1px; color: #ffcf72;
+  text-shadow: 0 0 24px rgba(255, 180, 80, 0.5); }
+h1 span { color: #b9a3ff; text-shadow: 0 0 24px rgba(150, 120, 255, 0.6); margin-left: 8px; }
+h2 { font-size: 30px; margin: 0 0 6px; text-align: center; }
+.tag { text-align: center; color: #a3a2bf; margin: 0 0 12px; }
+label { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #8786a3; margin-top: 6px; }
+button { font: inherit; font-size: 17px; padding: 13px 16px; border-radius: 12px; border: 1px solid #3a3860;
+  background: #1c1a33; color: #e8e6f5; cursor: pointer; min-height: 48px; }
+button:active { transform: scale(0.98); }
+button.primary { background: linear-gradient(135deg, #ffb547, #9d7bff); color: #120f22; font-weight: 700; border: 0; }
+button.ghost { background: transparent; }
+.seg { display: flex; gap: 6px; }
+.seg button { flex: 1; padding: 10px 6px; }
+.seg button.on { background: #e8e6f5; color: #120f22; font-weight: 700; }
+ul { padding-left: 20px; line-height: 1.45; color: #cfd0e6; margin: 0 0 8px; }
+li { margin-bottom: 8px; }
